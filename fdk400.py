@@ -21,7 +21,7 @@ class FDK400:
         result = {'pressure_S': 0, 'pressure_D': 0, 'pulse': 0}
         for i in range(50):
             res = proc.stdout.readline()
-            data = res.decode('ascii').strip()
+            data = res.decode('utf-8').strip()
             if data.find('ff fe 0a') != -1:
                 data = data.split(" ")[3:14]
                 result['pressure_S'] = int(data[7], 16)

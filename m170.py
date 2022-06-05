@@ -11,7 +11,6 @@ class M170:
           printf 'notify on\n\n'
           printf '\n\n'
           sleep 1
-          printf 'disconnect\n\n'
          
         } | bluetoothctl
         
@@ -23,22 +22,19 @@ class M170:
         oxygen_list = []
         pi_list = []
         result = {'pulse': 0, 'oxygen': 0, 'pi': 0}
-        for i in range(150):
+        for i in range(50):
             res = proc.stdout.readline()
-            data = res.decode('ascii').strip()
+            data = res.decode('utf-8').strip()
             if data.find('fe 6a 76 52 04 81') != -1:
-                data = data.split(" ")[3:12]
+                data=(data.split(' ')[25:35])
+                #data = data.split(" ")[3:12]
                 if len(data[6]) > 0:
-                    pulse_list.append(int(data[6], 16))
-                    oxygen_list.append(int(data[7], 16))
-                    pi_list.append(int(data[8], 16)/10)
-            if len(pulse_list) > 2:
-                pulse_mean = sum(pulse_list)//len(pulse_list)
-                oxygen_mean = sum(oxygen_list)//len(oxygen_list)
-                pi_mean = sum(pi_list)//len(pi_list)
-                result = {'pulse': pulse_mean,
-                          'oxygen': oxygen_mean, 'pi': pi_mean}
-                return result
+                    result = {'pulse': int(data[6], 16),
+                              'oxygen': int(data[7], 16),
+                              'pi': int(data[8], 16)/10}
+                    return result
+            
+        
         return result
 
 

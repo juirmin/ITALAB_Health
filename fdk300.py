@@ -22,17 +22,13 @@ class FDK300:
         temperateure = 0
         for i in range(50):
             res = proc.stdout.readline()
-            data = res.decode('ascii').strip()
-            
+            data = res.decode('utf-8').strip()          
             if data.find('fe 6a 72 5a') != -1:
-                data = data.split(' ')[3:10]
-                print(data)
+                data=data.split(' ')[26:33]
                 temp = str("").join(data[4:6])
-                print(temp)
                 temperateure = int(temp, 16)/100
                 if temperateure < 50:
-                    result['temperature'] = str(temperateure)
-                    print(result)
+                    result['temperature'] = float(temperateure)
                     return result
 
         return result

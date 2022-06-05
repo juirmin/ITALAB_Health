@@ -4,36 +4,52 @@ from PyQt5.QtCore import *
 from PyQt5 import QtWidgets
 import sys
 import time
-from get_user import get_uuid
+from get_user import get_uuid,temperature,oxygen
 from TTS import tts,playsound
 from readmode import readmode
 from fdk300 import FDK300
 from fdk400 import FDK400
 from m170 import M170
 from mtk_a1 import MTKA1
+import json
 
 
 class WorkerThread(QObject):
     signalExample = pyqtSignal(str, int)
 
-    def __init__(self):
+    def __init__(self,mode):
         super().__init__()
-
+        self.mode = mode
+        self.fdk300 = FDK300()
+        self.m170 = M170()
+        
     @pyqtSlot()
     def run(self):
         while True:
-            self.signalExample.emit("leet", 1337)
-            time.sleep(0.001)
-
+            if self.mode=='temperature':
+                try:
+                    data = self.fdk300.get_sensor_data()
+                    if data['temperature']!=0:
+                        self.signalExample.emit(json.dumps(data), 200)
+                except:
+                    pass
+            if self.mode=='oxygen':
+                try:
+                    data = self.m170.get_sensor_data()
+                    print(data,data['pulse'] < 200,data['pulse']!=0)
+                    if (data['pulse']!=0) and (data['pulse'] < 200):
+                        self.signalExample.emit(json.dumps(data), 200)
+                except:
+                    pass
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self,mode):
         QMainWindow.__init__(self)
-        self.mode = readmode()
+        self.mode = mode
         self.start = False
         self.user_response = {}
         self.setWindowTitle('ITALAB')
-        self.worker = WorkerThread()
+        self.worker = WorkerThread(mode=self.mode)
         self.workerThread = QThread()
         self.workerThread.started.connect(self.worker.run)
         self.worker.signalExample.connect(self.signalExample)
@@ -68,23 +84,22 @@ class MainWindow(QMainWindow):
             playsound("wrong")
 
     def loginout(self):
-        print(self.login_widget.line.text())
+        tts('良測結束')
+        self.start = False
         self.login_widget.line.setText('')
         self.central_widget.addWidget(self.login_widget)
         self.central_widget.setCurrentWidget(self.login_widget)
     
-    def signalExample(self, text):
+    def signalExample(self, text,value):
         if self.start:
+            data = json.loads(text)
+            uuid = self.user_response['data']['uuid']
             if self.mode=='temperature':
-                try:
-                    fdk300 = FDK300()
-                    _temp = fdk300.get_sensor_data()
-                    sensor_data = {'temperature': _temp['temperature']}
-                    print(sensor_data["temperature"])
-                    if sensor_data["temperature"]!=0:
-                        print('break')
-                except:
-                    pass
+                if temperature(data,uuid)==200:
+                    self.loginout()
+            if self.mode=='oxygen':
+                if oxygen(data,uuid)==200:
+                    self.loginout()
 
 class LoginWidget(QWidget):
     def __init__(self, parent=None):
@@ -109,7 +124,6 @@ class LoggedWidget(QWidget):
     def __init__(self, parent=None):
         super(LoggedWidget, self).__init__(parent)
         layout = QVBoxLayout()
-
         self.User = QLabel('')
         self.birthday = QLabel('')
         self.Label = QLabel('請開始量測')
@@ -127,6 +141,6 @@ class LoggedWidget(QWidget):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    mainWin = MainWindow()
+    mainWin = MainWindow(mode=readmode())
     mainWin.showFullScreen()
     sys.exit(app.exec_())
