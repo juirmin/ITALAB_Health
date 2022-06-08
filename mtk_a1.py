@@ -1,13 +1,14 @@
 import subprocess
-
+import os
 
 class MTKA1:
     def __init__(self):
+        os.system('sudo systemctl restart bluetooth')
         self.find_data = False
         self.cmd = '''
         { printf 'scan on\n\n'
           printf '\n\n'
-          sleep 30
+          sleep 2
           printf 'quit'
          
         } | bluetoothctl
@@ -18,7 +19,7 @@ class MTKA1:
         proc = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE)
         for i in range(50):
             res = proc.stdout.readline()
-            data = res.decode('ascii').strip()
+            data = res.decode('utf-8').strip()
             data_index = data.find(
                 'Device 6D:97:40:33:34:D0 ManufacturerData Value:')
 
@@ -39,3 +40,4 @@ if __name__ == '__main__':
     while 1:
         data = scale.get_sensor_data()
         print(data)
+

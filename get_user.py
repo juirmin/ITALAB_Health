@@ -12,7 +12,6 @@ headers = {
 def get_uuid(token):
     authURL = baseurl + "/user-auth"
     r = requests.post(authURL, headers=headers, json={"token": token})
-    #print(r.status_code)
     response = {}
     return json.loads(r.text)
 
@@ -21,8 +20,21 @@ def temperature(data,uuid):
     newdataURL = f"{baseurl}/users/{uuid}/measure-types/{measure}/measurements"
     r = requests.post(newdataURL, headers=headers, json={"temperature": data["temperature"]})
     return r.status_code
+
 def oxygen(data,uuid):
     measure = "blood-oxygen"
     newdataURL = f"{baseurl}/users/{uuid}/measure-types/{measure}/measurements"
     r = requests.post(newdataURL, headers=headers, json={"spo2": data['oxygen'], "pr": data['pulse']})
+    return r.status_code
+
+def pressure(data,uuid):
+    measure = "blood-pressure"
+    newdataURL = f"{baseurl}/users/{uuid}/measure-types/{measure}/measurements"
+    r = requests.post(newdataURL, headers=headers, json={"systolic_pressure": data['pressure_S'], "diastolic_pressure": data['pressure_D']})
+    return r.status_code
+
+def weight(data,uuid):
+    measure = "body-weight"
+    newdataURL = f"{baseurl}/users/{uuid}/measure-types/{measure}/measurements"
+    r = requests.post(newdataURL, headers=headers, json={"weight": data['weight']})
     return r.status_code

@@ -1,8 +1,9 @@
 import subprocess
-
+import os
 
 class M170:
     def __init__(self):
+        os.system('sudo systemctl restart bluetooth')
         self.cmd = '''
         { printf 'scan on\n\n'
           printf 'connect C8:DF:84:37:B4:D8\n\n'
@@ -11,7 +12,8 @@ class M170:
           printf 'notify on\n\n'
           printf '\n\n'
           sleep 1
-         
+          
+          
         } | bluetoothctl
         
         '''
@@ -23,7 +25,9 @@ class M170:
         pi_list = []
         result = {'pulse': 0, 'oxygen': 0, 'pi': 0}
         for i in range(50):
+            #print('ttt')
             res = proc.stdout.readline()
+            #print(res)
             data = res.decode('utf-8').strip()
             if data.find('fe 6a 76 52 04 81') != -1:
                 data=(data.split(' ')[25:35])
@@ -43,3 +47,5 @@ if __name__ == '__main__':
     while 1:
         data = m170.get_sensor_data()
         print(data)
+
+

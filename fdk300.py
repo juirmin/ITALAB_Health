@@ -1,8 +1,10 @@
+import os
 import subprocess
 
 
 class FDK300:
     def __init__(self):
+        os.system('sudo systemctl restart bluetooth')
         self.cmd = '''
         { printf 'scan on\n\n'
           printf 'connect C6:05:04:07:4D:54\n\n'
@@ -39,4 +41,5 @@ if __name__ == '__main__':
     while 1:
         data = fdk300.get_sensor_data()
         print(data)
+
 

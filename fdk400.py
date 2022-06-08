@@ -1,8 +1,9 @@
 import subprocess
-
+import os
 
 class FDK400:
     def __init__(self):
+        os.system('sudo systemctl restart bluetooth')
         self.cmd = '''
         { printf 'scan on\n\n'
           printf 'connect 07:B3:EC:03:99:BE\n\n'
@@ -23,7 +24,7 @@ class FDK400:
             res = proc.stdout.readline()
             data = res.decode('utf-8').strip()
             if data.find('ff fe 0a') != -1:
-                data = data.split(" ")[3:14]
+                data = data.split(" ")[26:]
                 result['pressure_S'] = int(data[7], 16)
                 result['pressure_D'] = int(data[9], 16)
                 result['pulse'] = int(data[10], 16)
