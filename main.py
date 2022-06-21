@@ -25,9 +25,6 @@ class WorkerThread(QObject):
         self.m170 = M170()
         self.mtka1 = MTKA1()
         self.fdk400 = FDK400()
-        #with open('/ITALAB.txt','w') as f:
-            #f.write('ReallyHandsome')
-            #f.close()
         
     @pyqtSlot()
     def run(self):
