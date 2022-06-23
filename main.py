@@ -29,6 +29,7 @@ class WorkerThread(QObject):
     @pyqtSlot()
     def run(self):
         while True:
+            
             if self.mode=='temperature':
                 try:
                     data = self.fdk300.get_sensor_data()
@@ -39,6 +40,7 @@ class WorkerThread(QObject):
             if self.mode=='oxygen':
                 try:
                     data = self.m170.get_sensor_data()
+                    print(data)
                     if (data['pulse']!=0) and (data['pulse'] < 200):
                         self.signalExample.emit(json.dumps(data), 200)
                 except:
@@ -82,6 +84,7 @@ class MainWindow(QMainWindow):
     def login(self):
         try:
             print(self.login_widget.line.text())
+            os.system('sudo systemctl restart bluetooth')
             self.user_response = get_uuid(self.login_widget.line.text())
             if self.user_response['status'] == 200:
                 self.logged_in_widget = LoggedWidget(self)
@@ -122,7 +125,7 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(5000,lambda : tts('良測結束'))
         QTimer.singleShot(6500,lambda : self.central_widget.setCurrentWidget(self.login_widget))
         
-        
+        self.login_widget.line.setFocus()        
     
     def signalExample(self, text,value):
         if self.start:

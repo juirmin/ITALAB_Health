@@ -3,15 +3,21 @@ from pydub import AudioSegment
 from pydub.playback import play
 
 def tts(mytext):
-    language = 'zh-tw'
-    myobj = gTTS(text=mytext, lang=language, slow=False)
-    myobj.save("output.mp3") 
-    music = AudioSegment.from_mp3('./output.mp3')
-    play(music)
+    try:
+        language = 'zh-tw'
+        myobj = gTTS(text=mytext, lang=language, slow=False)
+        myobj.save("output.mp3") 
+        music = AudioSegment.from_mp3('./output.mp3')
+        play(music)
+    except:
+        pass
 
 def playsound(file):
-    music = AudioSegment.from_mp3(f"{file}.mp3")
-    play(music)
+    try:
+        music = AudioSegment.from_mp3(f"{file}.mp3")
+        play(music)
+    except:
+        pass
 
 if __name__ == '__main__':
     #tts('請開始良測')
