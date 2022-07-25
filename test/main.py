@@ -9,7 +9,7 @@ import json
 import os
 from TTS import tts, playsound
 from Sensor_test import *
-from PyQt5 import QtMultimedia, QtTest
+from PyQt5 import QtTest
 
 
 class WorkerThread(QObject):

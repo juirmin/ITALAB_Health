@@ -12,7 +12,6 @@ headers = {
 def get_uuid(token):
     authURL = baseurl + "/user-auth"
     r = requests.post(authURL, headers=headers, json={"token": token})
-    response = {}
     return json.loads(r.text)
 
 def temperature(data,uuid):
