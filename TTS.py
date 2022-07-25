@@ -1,6 +1,6 @@
 from gtts import gTTS 
 from pydub import AudioSegment
-from pydub.playback import play
+from pydub.playback import play,_play_with_simpleaudio
 
 def tts(mytext):
     try:
@@ -8,7 +8,7 @@ def tts(mytext):
         myobj = gTTS(text=mytext, lang=language, slow=False)
         myobj.save("output.mp3") 
         music = AudioSegment.from_mp3('./output.mp3')
-        play(music)
+        play(music).is_playing()
     except:
         pass
 
@@ -20,5 +20,5 @@ def playsound(file):
         pass
 
 if __name__ == '__main__':
-    #tts('請開始良測')
-    playsound('wrong')
+    tts('請開始良測')
+    # playsound('wrong')

@@ -1,18 +1,17 @@
 import requests
 import json
 
-UUID = "a0e03240-c69f-11ec-9140-05d9030e6400"
-api = "7bafd854-fa0f-4f8f-8bc5-d287944ec46f"
-Host = "35.187.158.248"
+Host = "healthy-api.huakai.com.tw"
+UUID = "a0dd03c0-f1c7-11ec-a3f6-1b708992358f"
+api = "d69d3fc0-ga8r-e1hu-b803-6567760e2826"
 Version = "1.0"
-baseurl = f"http://{Host}/api/{Version}/partners/{UUID}"
+baseurl = f"https://{Host}/api/{Version}/partners/{UUID}"
 headers = {
     "Header-Auth-Key": api,
 }
 def get_uuid(token):
     authURL = baseurl + "/user-auth"
     r = requests.post(authURL, headers=headers, json={"token": token})
-    response = {}
     return json.loads(r.text)
 
 def temperature(data,uuid):
