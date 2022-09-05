@@ -1,16 +1,16 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore, QtMultimedia
 import sys
 import time
 from get_user import get_uuid, temperature, oxygen, weight, pressure
 import json
 import os
-from TTS import tts, playsound
+from TTS import tts
 from Sensor_test import *
-from PyQt5 import QtTest
 
+from gtts import gTTS
 
 class WorkerThread(QObject):
     signalExample = pyqtSignal(str, int)
@@ -69,9 +69,12 @@ class MainWindow(QMainWindow):
             'pulse': '脈搏',
             'temperature': '體溫',
             'oxygen': '血氧',
-            'pressure' : '血壓'
+            'pressure': '血壓'
         }
-        self.wait_time = 5
+        self.url = QtCore.QUrl.fromLocalFile("output.mp3")
+        self.content = QtMultimedia.QMediaContent(self.url)
+        self.player = QtMultimedia.QMediaPlayer()
+        self.player.setMedia(self.content)
         self.mode = mode
         self.start = False
         self.user_response = {}
@@ -90,6 +93,14 @@ class MainWindow(QMainWindow):
         self.central_widget.addWidget(self.login_widget)
         self.logged_in_widget = LoggedWidget(self)
 
+    def playsound(self,file):
+        self.url = QtCore.QUrl.fromLocalFile(file)
+        self.content = QtMultimedia.QMediaContent(self.url)
+        self.player = QtMultimedia.QMediaPlayer()
+        self.player.setMedia(self.content)
+        self.player.play()
+        print('test')
+
     def login(self):
         try:
             print(self.login_widget.line.text())
@@ -100,21 +111,18 @@ class MainWindow(QMainWindow):
                 # self.logged_in_widget.birthday.setText(f"生日：{self.user_response['data']['birthday']}")
                 self.central_widget.addWidget(self.logged_in_widget)
                 self.central_widget.setCurrentWidget(self.logged_in_widget)
-                QtTest.QTest.qWait(self.wait_time)
-                tts(f"您好，{self.user_response['data']['username']}")
-                QtTest.QTest.qWait(self.wait_time)
-                tts('請開始良測')
+                tts(f"您好，{self.user_response['data']['username']},請開始良測")
+                self.playsound("output.mp3")
                 self.start = True
             else:
                 self.login_widget.Label.setText('條碼掃描錯誤\n請重新掃描')
                 self.login_widget.line.setText(
                     'qfbhDj4JvieUv4m6YC1q8E6ZbaJdzXwvlzjPlBqno6e1yXitThFEUu/S07GAKWIEKjRtNWEyaGxbgj7z6j3fpOt2bdZsrLMQpM/q5AMpYEVgqDhWXuLc9znlsZeeQNoLDWVYpzG13oRg/O1i/mHsUWfZArmXSjboLmrM1nw+3DoUQvyH5MG/lpAKvHA2wnWS')
-                playsound("wrong")
+
         except:
             self.login_widget.Label.setText('條碼掃描錯誤\n請重新掃描')
             self.login_widget.line.setText(
                 'qfbhDj4JvieUv4m6YC1q8E6ZbaJdzXwvlzjPlBqno6e1yXitThFEUu/S07GAKWIEKjRtNWEyaGxbgj7z6j3fpOt2bdZsrLMQpM/q5AMpYEVgqDhWXuLc9znlsZeeQNoLDWVYpzG13oRg/O1i/mHsUWfZArmXSjboLmrM1nw+3DoUQvyH5MG/lpAKvHA2wnWS')
-            playsound("wrong")
 
     def loginout(self, dict1):
         self.start = False
@@ -129,8 +137,7 @@ class MainWindow(QMainWindow):
         self.login_widget.Label.setText('請掃描條碼')
         self.central_widget.removeWidget(self.logged_in_widget)
         self.central_widget.setCurrentWidget(sw)
-        QtTest.QTest.qWait(self.wait_time)
-        tts('良測結束')
+        # tts('良測結束')
         self.central_widget.setCurrentWidget(self.login_widget)
         self.login_widget.line.setFocus()
 

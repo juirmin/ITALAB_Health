@@ -1,24 +1,36 @@
-from gtts import gTTS 
-from pydub import AudioSegment
-from pydub.playback import play,_play_with_simpleaudio
+# from gtts import gTTS
+#
+# def tts(mytext):
+#     try:
+#         language = 'zh-tw'
+#         myobj = gTTS(text=mytext, lang='zh-tw', slow=False)
+#
+#         myobj.save("output.mp3")
+#     except:
+#         raise
+#
+# if __name__ == '__main__':
+#     tts('請開始良測')
+#
+#     # playsound('wrong')
+import pyttsx3
 
-def tts(mytext):
-    try:
-        language = 'zh-tw'
-        myobj = gTTS(text=mytext, lang=language, slow=False)
-        myobj.save("output.mp3") 
-        music = AudioSegment.from_mp3('./output.mp3')
-        play(music).is_playing()
-    except:
-        pass
 
-def playsound(file):
-    try:
-        music = AudioSegment.from_mp3(f"{file}.mp3")
-        play(music)
-    except:
-        pass
+def onStart(name):
+   print('starting', name)
+def onWord(name, location, length):
+   print ('word', name, location, length)
+def onEnd(name, completed):
+   print('finishing', name, completed)
 
-if __name__ == '__main__':
-    tts('請開始良測')
-    # playsound('wrong')
+
+engine = pyttsx3.init()
+
+voices = engine.getProperty('voices')
+print(voices)
+engine.connect('started-utterance', onStart)
+engine.connect('started-word', onWord)
+engine.connect('finished-utterance', onEnd)
+engine.say('認證成功.')
+engine.runAndWait()
+
