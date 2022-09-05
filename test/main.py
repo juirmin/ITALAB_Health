@@ -7,10 +7,10 @@ import time
 from get_user import get_uuid, temperature, oxygen, weight, pressure
 import json
 import os
-from TTS import tts
+# from TTS import tts
 from Sensor_test import *
-
-from gtts import gTTS
+from PyQt5.QtTextToSpeech import QTextToSpeech
+from PyQt5 import QtTest
 
 class WorkerThread(QObject):
     signalExample = pyqtSignal(str, int)
@@ -71,10 +71,11 @@ class MainWindow(QMainWindow):
             'oxygen': '血氧',
             'pressure': '血壓'
         }
-        self.url = QtCore.QUrl.fromLocalFile("output.mp3")
-        self.content = QtMultimedia.QMediaContent(self.url)
-        self.player = QtMultimedia.QMediaPlayer()
-        self.player.setMedia(self.content)
+        self.engine = None
+        engineNames = QTextToSpeech.availableEngines()
+        self.engine = QTextToSpeech(engineNames[0])
+        self.engine.stateChanged.connect(self.stateChanged)
+
         self.mode = mode
         self.start = False
         self.user_response = {}
@@ -92,28 +93,28 @@ class MainWindow(QMainWindow):
         self.login_widget.Title.setText(f"模式：{self.kdict.get(self.mode)}")
         self.central_widget.addWidget(self.login_widget)
         self.logged_in_widget = LoggedWidget(self)
+        self.stack = 'login'
 
-    def playsound(self,file):
-        self.url = QtCore.QUrl.fromLocalFile(file)
-        self.content = QtMultimedia.QMediaContent(self.url)
-        self.player = QtMultimedia.QMediaPlayer()
-        self.player.setMedia(self.content)
-        self.player.play()
-        print('test')
+    def stateChanged(self, state):
+        if (state == QTextToSpeech.State.Ready):
+            if self.stack == 'login':
+                self.start = True
+            elif self.stack == 'logout':
+                time.sleep(3)
+                self.central_widget.setCurrentWidget(self.login_widget)
+                self.login_widget.line.setFocus()
+                self.start = False
 
     def login(self):
         try:
-            print(self.login_widget.line.text())
             self.user_response = get_uuid(self.login_widget.line.text())
             if self.user_response['status'] == 200:
                 self.logged_in_widget = LoggedWidget(self)
                 self.logged_in_widget.User.setText(f"使用者：{self.user_response['data']['username']}")
-                # self.logged_in_widget.birthday.setText(f"生日：{self.user_response['data']['birthday']}")
                 self.central_widget.addWidget(self.logged_in_widget)
                 self.central_widget.setCurrentWidget(self.logged_in_widget)
-                tts(f"您好，{self.user_response['data']['username']},請開始良測")
-                self.playsound("output.mp3")
-                self.start = True
+                self.stack = 'login'
+                self.engine.say(f"您好，{self.user_response['data']['username']},請開始良測")
             else:
                 self.login_widget.Label.setText('條碼掃描錯誤\n請重新掃描')
                 self.login_widget.line.setText(
@@ -125,21 +126,18 @@ class MainWindow(QMainWindow):
                 'qfbhDj4JvieUv4m6YC1q8E6ZbaJdzXwvlzjPlBqno6e1yXitThFEUu/S07GAKWIEKjRtNWEyaGxbgj7z6j3fpOt2bdZsrLMQpM/q5AMpYEVgqDhWXuLc9znlsZeeQNoLDWVYpzG13oRg/O1i/mHsUWfZArmXSjboLmrM1nw+3DoUQvyH5MG/lpAKvHA2wnWS')
 
     def loginout(self, dict1):
-        self.start = False
         self.login_widget.line.setText(
             'qfbhDj4JvieUv4m6YC1q8E6ZbaJdzXwvlzjPlBqno6e1yXitThFEUu/S07GAKWIEKjRtNWEyaGxbgj7z6j3fpOt2bdZsrLMQpM/q5AMpYEVgqDhWXuLc9znlsZeeQNoLDWVYpzG13oRg/O1i/mHsUWfZArmXSjboLmrM1nw+3DoUQvyH5MG/lpAKvHA2wnWS')
         sw = SensorWidget()
-
         for k, v in dict1.items():
             if self.kdict.get(k):
                 sw.layout.addWidget(sw.La_text(f"{self.kdict.get(k)} : {v}"))
         self.central_widget.addWidget(sw)
+        self.stack = 'logout'
         self.login_widget.Label.setText('請掃描條碼')
         self.central_widget.removeWidget(self.logged_in_widget)
         self.central_widget.setCurrentWidget(sw)
-        # tts('良測結束')
-        self.central_widget.setCurrentWidget(self.login_widget)
-        self.login_widget.line.setFocus()
+        self.engine.say('良測結束')
 
     def signalExample(self, text, value):
         if self.start:
