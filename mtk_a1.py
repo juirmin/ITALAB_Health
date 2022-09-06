@@ -9,7 +9,7 @@ class MTKA1:
         self.cmd = '''
         { printf 'scan on\n\n'
           printf '\n\n'
-          sleep 4
+          sleep 1
           printf 'quit'
          
         } | bluetoothctl
@@ -27,6 +27,7 @@ class MTKA1:
             if self.find_data == True:
                 raw_data = data.split(' ')
                 raw_weight = ''.join(raw_data[-10:-8])
+                weight = 0
                 try:
                     weight = int(raw_weight, 16) / 10
                 except:
