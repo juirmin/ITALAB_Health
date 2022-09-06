@@ -97,6 +97,7 @@ class MainWindow(QMainWindow):
         self.logged_in_widget = LoggedWidget(self)
         self.state = 'login'
         self.network_state = False
+        self.runtime = time.time()
 
     def say(self, floder='output.mp3'):
         QtTest.QTest.qWait(0.01)
@@ -153,6 +154,7 @@ class MainWindow(QMainWindow):
         self.central_widget.removeWidget(self.logged_in_widget)
         self.central_widget.setCurrentWidget(sw)
         self.say(os.path.join('sound', 'finish.mp3'))
+        self.runtime = time.time()
         self.central_widget.setCurrentWidget(self.login_widget)
         self.login_widget.line.setFocus()
 
@@ -160,7 +162,7 @@ class MainWindow(QMainWindow):
         if value == 400:
             print(text)
             self.close()
-        if self.start:
+        if self.start and (time.time()-self.runtime >= 3):
             data = json.loads(text)
             uuid = self.user_response['data']['uuid']
             if self.mode == 'temperature':

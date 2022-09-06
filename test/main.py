@@ -90,6 +90,7 @@ class MainWindow(QMainWindow):
         self.logged_in_widget = LoggedWidget(self)
         self.state = 'login'
         self.network_state = False
+        self.runtime = time.time()
 
     def say(self):
         QtTest.QTest.qWait(0.01)
@@ -149,13 +150,14 @@ class MainWindow(QMainWindow):
         self.central_widget.setCurrentWidget(sw)
         if tts('良測結束'):
             self.say()
+            self.runtime = time.time()
         self.close()
         self.central_widget.setCurrentWidget(self.login_widget)
         self.login_widget.line.setFocus()
 
 
     def signalExample(self, text, value):
-        if self.start:
+        if self.start and (time.time()-self.runtime >= 3):
             data = json.loads(text)
             uuid = self.user_response['data']['uuid']
             if self.mode == 'temperature':
