@@ -11,8 +11,8 @@ def readmode():
     GPIO.setup(37, GPIO.IN)
     mode_list = ['temperature', 'oxygen', 'pressure', 'weight']
     gpio_list = [1, 1, 1, 1]
-    for i in range(10000):
-        if i < 1000:
+    for i in range(1000):
+        if i < 100:
             continue
         if (GPIO.input(31) != True):
             gpio_list[3] = 0

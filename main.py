@@ -3,7 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5 import QtWidgets
 import sys
 from get_user import get_uuid, temperature, oxygen, weight, pressure
-from TTS import tts, playsound
+from TTS import tts
 from readmode import readmode
 from fdk300 import FDK300
 from fdk400 import FDK400
@@ -12,6 +12,8 @@ from mtk_a1 import MTKA1
 import json
 import os
 from PyQt5 import QtTest
+from pygame import mixer
+from net_check import internet_on
 
 
 class WorkerThread(QObject):
@@ -28,7 +30,6 @@ class WorkerThread(QObject):
     @pyqtSlot()
     def run(self):
         while True:
-
             if self.mode == 'temperature':
                 try:
                     data = self.fdk300.get_sensor_data()
@@ -72,7 +73,6 @@ class MainWindow(QMainWindow):
             'oxygen': '血氧',
             'pressure': '血壓'
         }
-        self.wait_time = 5
         self.mode = mode
         self.start = False
         self.user_response = {}
@@ -90,30 +90,50 @@ class MainWindow(QMainWindow):
         self.login_widget.Title.setText(f"模式：{self.kdict.get(self.mode)}")
         self.central_widget.addWidget(self.login_widget)
         self.logged_in_widget = LoggedWidget(self)
+        self.state = 'login'
+        self.network_state = False
+
+    def say(self):
+        QtTest.QTest.qWait(0.01)
+        mixer.init()
+        mixer.music.load('output.mp3')
+        mixer.music.play()
+        while mixer.music.get_busy():
+            continue
+        mixer.quit()
 
     def login(self):
+        while self.network_state != True:
+            self.network_state = internet_on()
+            self.login_widget.Network.setText('沒連接到網路')
+            self.login_widget.Network.setStyleSheet("font-size : 20px;text-align: center;color: 'red'")
+        self.login_widget.Network.setText('已連接到網路')
+        self.login_widget.Network.setStyleSheet("font-size : 20px;text-align: center;color: 'green'")
         try:
-            print(self.login_widget.line.text())
-            os.system('sudo systemctl restart bluetooth')
+            if self.mode in ['oxygen']:
+                os.system('sudo systemctl restart bluetooth')
             self.user_response = get_uuid(self.login_widget.line.text())
             if self.user_response['status'] == 200:
+                self.start = True
                 self.logged_in_widget = LoggedWidget(self)
                 self.logged_in_widget.User.setText(f"使用者：{self.user_response['data']['username']}")
                 self.central_widget.addWidget(self.logged_in_widget)
                 self.central_widget.setCurrentWidget(self.logged_in_widget)
-                QtTest.QTest.qWait(self.wait_time)
-                tts(f"您好，{self.user_response['data']['username']}")
-                QtTest.QTest.qWait(self.wait_time)
-                tts('請開始良測')
-                self.start = True
+                if tts(f"您好，{self.user_response['data']['username']},請開始良測"):
+                    self.say()
+
             else:
                 self.login_widget.Label.setText('條碼掃描錯誤\n請重新掃描')
                 self.login_widget.line.setText('')
-                playsound("wrong")
+                if tts(f"條碼掃描錯誤請重新掃描"):
+                    self.say()
+                self.login_widget.Label.setText('請掃描條碼')
         except:
             self.login_widget.Label.setText('條碼掃描錯誤\n請重新掃描')
             self.login_widget.line.setText('')
-            playsound("wrong")
+            if tts(f"條碼掃描錯誤請重新掃描"):
+                self.say()
+            self.login_widget.Label.setText('請掃描條碼')
 
     def loginout(self, dict1):
         self.start = False
@@ -126,8 +146,8 @@ class MainWindow(QMainWindow):
         self.login_widget.Label.setText('請掃描條碼')
         self.central_widget.removeWidget(self.logged_in_widget)
         self.central_widget.setCurrentWidget(sw)
-        QtTest.QTest.qWait(self.wait_time)
-        tts('良測結束')
+        if tts('良測結束'):
+            self.say()
         self.central_widget.setCurrentWidget(self.login_widget)
         self.login_widget.line.setFocus()
 
@@ -153,6 +173,16 @@ class LoginWidget(QWidget):
     def __init__(self, parent=None):
         super(LoginWidget, self).__init__(parent)
         layout = QHBoxLayout()
+        self.Network = QLabel(self)
+        self.Network.move(30, 60)
+        self.Network.resize(200, 30)
+        if internet_on():
+            self.Network.setText('已連接到網路')
+            self.Network.setStyleSheet("font-size : 20px;text-align: center;color: 'green'")
+        else:
+            self.Network.setText('未連接到網路')
+            self.Network.setStyleSheet("font-size : 20px;text-align: center;color: 'red'")
+
         self.Title = QLabel(self)
         self.Title.move(30, 30)
         self.Title.resize(200, 30)
