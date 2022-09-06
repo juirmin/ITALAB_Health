@@ -152,6 +152,7 @@ class MainWindow(QMainWindow):
         self.central_widget.setCurrentWidget(self.login_widget)
         self.login_widget.line.setFocus()
 
+
     def signalExample(self, text, value):
         if self.start:
             data = json.loads(text)

@@ -14,6 +14,7 @@ import os
 from PyQt5 import QtTest
 from pygame import mixer
 from net_check import internet_on
+import time
 
 
 class WorkerThread(QObject):
@@ -26,10 +27,15 @@ class WorkerThread(QObject):
         self.m170 = M170()
         self.mtka1 = MTKA1()
         self.fdk400 = FDK400()
+        self.ex = time.time()
 
     @pyqtSlot()
     def run(self):
         while True:
+            if (time.time() - self.ex > 10) and (time.time() - self.ex < 20):
+                self.signalExample.emit('exit', 400)
+            if self.mode != readmode():
+                self.ex = time.time()
             if self.mode == 'temperature':
                 try:
                     data = self.fdk300.get_sensor_data()
@@ -40,7 +46,6 @@ class WorkerThread(QObject):
             if self.mode == 'oxygen':
                 try:
                     data = self.m170.get_sensor_data()
-                    print(data)
                     if (data['pulse'] != 0) and (data['pulse'] < 200):
                         self.signalExample.emit(json.dumps(data), 200)
                 except:
@@ -152,6 +157,8 @@ class MainWindow(QMainWindow):
         self.login_widget.line.setFocus()
 
     def signalExample(self, text, value):
+        if value == 400:
+            self.quit()
         if self.start:
             data = json.loads(text)
             uuid = self.user_response['data']['uuid']
