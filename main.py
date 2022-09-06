@@ -27,15 +27,15 @@ class WorkerThread(QObject):
         self.m170 = M170()
         self.mtka1 = MTKA1()
         self.fdk400 = FDK400()
-        self.ex = time.time()
+        self.ex = 0
 
     @pyqtSlot()
     def run(self):
         while True:
-            if (time.time() - self.ex > 10) and (time.time() - self.ex < 20):
+            if self.ex >= 10:
                 self.signalExample.emit('exit', 400)
             if self.mode != readmode():
-                self.ex = time.time()
+                self.ex += 1
             if self.mode == 'temperature':
                 try:
                     data = self.fdk300.get_sensor_data()
