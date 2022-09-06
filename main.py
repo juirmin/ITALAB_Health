@@ -122,7 +122,7 @@ class MainWindow(QMainWindow):
                 soundpath = os.path.join("sound", f"{self.user_response['data']['username']}.mp3")
                 if f"{self.user_response['data']['username']}.mp3" in os.listdir('sound'):
                     self.say(floder=soundpath)
-                if tts(f"您好，{self.user_response['data']['username']},請開始良測", filename=soundpath):
+                elif tts(f"您好，{self.user_response['data']['username']},請開始良測", filename=soundpath):
                     self.say(floder=soundpath)
 
             else:
