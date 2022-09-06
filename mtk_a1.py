@@ -9,7 +9,7 @@ class MTKA1:
         self.cmd = '''
         { printf 'scan on\n\n'
           printf '\n\n'
-          sleep 2
+          sleep 4
           printf 'quit'
          
         } | bluetoothctl
