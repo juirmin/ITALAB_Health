@@ -101,7 +101,6 @@ class MainWindow(QMainWindow):
         mixer.quit()
 
     def login(self):
-        self.start = True
         while self.network_state != True:
             self.network_state = internet_on()
             self.login_widget.Network.setText('沒連接到網路')
@@ -111,6 +110,7 @@ class MainWindow(QMainWindow):
         try:
             self.user_response = get_uuid(self.login_widget.line.text())
             if self.user_response['status'] == 200:
+                self.start = True
                 self.logged_in_widget = LoggedWidget(self)
                 self.logged_in_widget.User.setText(f"使用者：{self.user_response['data']['username']}")
                 self.central_widget.addWidget(self.logged_in_widget)

@@ -99,7 +99,6 @@ class MainWindow(QMainWindow):
             if self.user_response['status'] == 200:
                 self.logged_in_widget = LoggedWidget(self)
                 self.logged_in_widget.User.setText(f"使用者：{self.user_response['data']['username']}")
-                # self.logged_in_widget.birthday.setText(f"生日：{self.user_response['data']['birthday']}")
                 self.central_widget.addWidget(self.logged_in_widget)
                 self.central_widget.setCurrentWidget(self.logged_in_widget)
                 QtTest.QTest.qWait(self.wait_time)
