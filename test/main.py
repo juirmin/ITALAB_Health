@@ -1,16 +1,16 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from PyQt5 import QtWidgets, QtCore, QtMultimedia
+from PyQt5 import QtWidgets
 import sys
 import time
 from get_user import get_uuid, temperature, oxygen, weight, pressure
 import json
-import os
 from TTS import tts
 from Sensor_test import *
 from pygame import mixer
 from PyQt5 import QtTest
+from net_check import internet_on
+
 
 class WorkerThread(QObject):
     signalExample = pyqtSignal(str, int)
@@ -89,11 +89,9 @@ class MainWindow(QMainWindow):
         self.central_widget.addWidget(self.login_widget)
         self.logged_in_widget = LoggedWidget(self)
         self.state = 'login'
+        self.network_state = False
+
     def say(self):
-        if self.state == 'login':
-            self.start = True
-        else:
-            self.start = False
         QtTest.QTest.qWait(0.01)
         mixer.init()
         mixer.music.load('output.mp3')
@@ -103,7 +101,13 @@ class MainWindow(QMainWindow):
         mixer.quit()
 
     def login(self):
-        self.state = 'login'
+        self.start = True
+        while self.network_state != True:
+            self.network_state = internet_on()
+            self.login_widget.Network.setText('沒連接到網路')
+            self.login_widget.Network.setStyleSheet("font-size : 20px;text-align: center;color: 'red'")
+        self.login_widget.Network.setText('已連接到網路')
+        self.login_widget.Network.setStyleSheet("font-size : 20px;text-align: center;color: 'green'")
         try:
             self.user_response = get_uuid(self.login_widget.line.text())
             if self.user_response['status'] == 200:
@@ -118,14 +122,21 @@ class MainWindow(QMainWindow):
                 self.login_widget.Label.setText('條碼掃描錯誤\n請重新掃描')
                 self.login_widget.line.setText(
                     'qfbhDj4JvieUv4m6YC1q8E6ZbaJdzXwvlzjPlBqno6e1yXitThFEUu/S07GAKWIEKjRtNWEyaGxbgj7z6j3fpOt2bdZsrLMQpM/q5AMpYEVgqDhWXuLc9znlsZeeQNoLDWVYpzG13oRg/O1i/mHsUWfZArmXSjboLmrM1nw+3DoUQvyH5MG/lpAKvHA2wnWS')
-
+                if tts(f"條碼掃描錯誤請重新掃描"):
+                    self.say()
+                self.login_widget.Label.setText('請掃描條碼')
         except:
+
             self.login_widget.Label.setText('條碼掃描錯誤\n請重新掃描')
             self.login_widget.line.setText(
                 'qfbhDj4JvieUv4m6YC1q8E6ZbaJdzXwvlzjPlBqno6e1yXitThFEUu/S07GAKWIEKjRtNWEyaGxbgj7z6j3fpOt2bdZsrLMQpM/q5AMpYEVgqDhWXuLc9znlsZeeQNoLDWVYpzG13oRg/O1i/mHsUWfZArmXSjboLmrM1nw+3DoUQvyH5MG/lpAKvHA2wnWS')
+            if tts(f"條碼掃描錯誤請重新掃描"):
+                self.say()
+            self.login_widget.Label.setText('請掃描條碼')
+
 
     def loginout(self, dict1):
-        self.state = 'logout'
+        self.start = False
         self.login_widget.line.setText(
             'qfbhDj4JvieUv4m6YC1q8E6ZbaJdzXwvlzjPlBqno6e1yXitThFEUu/S07GAKWIEKjRtNWEyaGxbgj7z6j3fpOt2bdZsrLMQpM/q5AMpYEVgqDhWXuLc9znlsZeeQNoLDWVYpzG13oRg/O1i/mHsUWfZArmXSjboLmrM1nw+3DoUQvyH5MG/lpAKvHA2wnWS')
         sw = SensorWidget()
@@ -140,7 +151,6 @@ class MainWindow(QMainWindow):
             self.say()
         self.central_widget.setCurrentWidget(self.login_widget)
         self.login_widget.line.setFocus()
-
 
     def signalExample(self, text, value):
         if self.start:
@@ -164,6 +174,15 @@ class LoginWidget(QWidget):
     def __init__(self, parent=None):
         super(LoginWidget, self).__init__(parent)
         layout = QHBoxLayout()
+        self.Network = QLabel(self)
+        self.Network.move(30, 60)
+        self.Network.resize(200, 30)
+        if internet_on():
+            self.Network.setText('已連接到網路')
+            self.Network.setStyleSheet("font-size : 20px;text-align: center;color: 'green'")
+        else:
+            self.Network.setText('未連接到網路')
+            self.Network.setStyleSheet("font-size : 20px;text-align: center;color: 'red'")
         self.Title = QLabel(self)
         self.Title.move(30, 30)
         self.Title.resize(200, 30)
@@ -176,7 +195,7 @@ class LoginWidget(QWidget):
         self.line.move(0, 0)
         self.line.resize(0, 0)
         self.line.setText(
-            "qfbhDj4JvieUv4m6YC1q8E6ZbaJdzXwvlzjPlBqno6e1yXitThFEUu/S07GAKWIEKjRtNWEyaGxbgj7z6j3fpOt2bdZsrLMQpM/q5AMpYEVgqDhWXuLc9znlsZeeQNoLDWVYpzG13oRg/O1i/mHsUWfZArmXSjboLmrM1nw+3DoUQvyH5MG/lpAKvHA2wnWS")
+            "fbhDj4JvieUv4m6YC1q8E6ZbaJdzXwvlzjPlBqno6e1yXitThFEUu/S07GAKWIEKjRtNWEyaGxbgj7z6j3fpOt2bdZsrLMQpM/q5AMpYEVgqDhWXuLc9znlsZeeQNoLDWVYpzG13oRg/O1i/mHsUWfZArmXSjboLmrM1nw+3DoUQvyH5MG/lpAKvHA2wnWS")
         layout.addWidget(self.Label)
         self.setLayout(layout)
 

@@ -3,7 +3,7 @@ import urllib3
 def internet_on():
     try:
         http = urllib3.PoolManager()
-        url = 'https://www.google.com/'
+        url = 'https://healthy-api.huakai.com.tw/'
         if http.request('GET', url):
             return True
     except:
