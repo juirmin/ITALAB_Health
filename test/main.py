@@ -149,6 +149,7 @@ class MainWindow(QMainWindow):
         self.central_widget.setCurrentWidget(sw)
         if tts('良測結束'):
             self.say()
+        self.close()
         self.central_widget.setCurrentWidget(self.login_widget)
         self.login_widget.line.setFocus()
 

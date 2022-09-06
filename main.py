@@ -158,7 +158,8 @@ class MainWindow(QMainWindow):
 
     def signalExample(self, text, value):
         if value == 400:
-            self.quit()
+            print(text)
+            self.close()
         if self.start:
             data = json.loads(text)
             uuid = self.user_response['data']['uuid']
