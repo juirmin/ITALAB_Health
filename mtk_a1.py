@@ -1,6 +1,7 @@
 import subprocess
 import os
 
+
 class MTKA1:
     def __init__(self):
         os.system('sudo systemctl restart bluetooth')
@@ -26,7 +27,12 @@ class MTKA1:
             if self.find_data == True:
                 raw_data = data.split(' ')
                 raw_weight = ''.join(raw_data[-10:-8])
-                weight = int(raw_weight, 16)/10
+                try:
+                    weight = int(raw_weight, 16) / 10
+                except:
+                    pass
+                if (weight <= 0) or (weight > 300):
+                    continue
                 self.find_data = False
                 return {'weight': weight}
 
@@ -40,4 +46,3 @@ if __name__ == '__main__':
     while 1:
         data = scale.get_sensor_data()
         print(data)
-
