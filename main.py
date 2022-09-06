@@ -93,10 +93,10 @@ class MainWindow(QMainWindow):
         self.state = 'login'
         self.network_state = False
 
-    def say(self):
+    def say(self, floder='output.mp3'):
         QtTest.QTest.qWait(0.01)
         mixer.init()
-        mixer.music.load('output.mp3')
+        mixer.music.load(floder)
         mixer.music.play()
         while mixer.music.get_busy():
             continue
@@ -119,20 +119,21 @@ class MainWindow(QMainWindow):
                 self.logged_in_widget.User.setText(f"使用者：{self.user_response['data']['username']}")
                 self.central_widget.addWidget(self.logged_in_widget)
                 self.central_widget.setCurrentWidget(self.logged_in_widget)
-                if tts(f"您好，{self.user_response['data']['username']},請開始良測"):
-                    self.say()
+                soundpath = os.path.join("sound", f"{self.user_response['data']['username']}.mp3")
+                if f"{self.user_response['data']['username']}.mp3" in os.listdir('sound'):
+                    self.say(floder=soundpath)
+                if tts(f"您好，{self.user_response['data']['username']},請開始良測", filename=soundpath):
+                    self.say(floder=soundpath)
 
             else:
                 self.login_widget.Label.setText('條碼掃描錯誤\n請重新掃描')
                 self.login_widget.line.setText('')
-                if tts(f"條碼掃描錯誤請重新掃描"):
-                    self.say()
+                self.say(os.path.join('sound', 'wrong.mp3'))
                 self.login_widget.Label.setText('請掃描條碼')
         except:
             self.login_widget.Label.setText('條碼掃描錯誤\n請重新掃描')
             self.login_widget.line.setText('')
-            if tts(f"條碼掃描錯誤請重新掃描"):
-                self.say()
+            self.say(os.path.join('sound', 'wrong.mp3'))
             self.login_widget.Label.setText('請掃描條碼')
 
     def loginout(self, dict1):
@@ -146,8 +147,7 @@ class MainWindow(QMainWindow):
         self.login_widget.Label.setText('請掃描條碼')
         self.central_widget.removeWidget(self.logged_in_widget)
         self.central_widget.setCurrentWidget(sw)
-        if tts('良測結束'):
-            self.say()
+        self.say(os.path.join('sound', 'finish.mp3'))
         self.central_widget.setCurrentWidget(self.login_widget)
         self.login_widget.line.setFocus()
 
