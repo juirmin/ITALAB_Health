@@ -18,7 +18,7 @@ class MTKA1:
 
     def get_sensor_data(self):
         proc = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE)
-        for i in range(50):
+        for i in range(100):
             res = proc.stdout.readline()
             data = res.decode('utf-8').strip()
             data_index = data.find(
